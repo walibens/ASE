@@ -1,7 +1,9 @@
-### DCI : 
+
+
+### DCI : Data Context and Interaction
 https://en.wikipedia.org/wiki/Data,_context_and_interaction
 
-### MVC :
+### MVC : Model View Controller
 https://fr.wikipedia.org/wiki/Mod%C3%A8le-vue-contr%C3%B4leur
 ##### MVC variations : 
 - https://manojjaggavarapu.wordpress.com/2012/05/02/presentation-patterns-mvc-mvp-pm-mvvm/
