@@ -6,4 +6,4 @@ https://www.youtube.com/watch?v=3RtLCav0Bp4
 https://michaelfeathers.silvrback.com/a-monadic-approach-to-error-handling-in-collection-pipelines
 
 ### Concept map 
-![alt text](./cmap error handling.png)
+![alt text](./cmap_error_handling.png)
