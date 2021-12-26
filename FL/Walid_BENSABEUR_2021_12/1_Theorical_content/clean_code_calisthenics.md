@@ -2,16 +2,16 @@
 
 ## Introduction
 Clean object calisthenics is a clean code discipline invented by Damir Majer that can be considered as a compass gathering principles that are intended to improve the overall code quality.
-Each of the following principle will be presented with a definition, the references to other principles and an example in ABAP.
+Each of the following principle will be presented with an explanation and definition an example in ABAP.
 
 ## 4 rules of simple design
 Presented by Kent Beck while he was developing XP in the 90s, the rules are the following one, ordered by priority and complementing each other:
 
 #### 1.	Pass the tests (It works)
-Writing tests (comprehensive tests) actually could lead us to better designs
-Once the tests are passed, we are empowered to keep our code clean. We do this by refactoring the code
-The fact that we have these tests eliminates the fear that cleaning up the code will break it!
+Writing tests (comprehensive tests) actually could lead us to better designs. It allows to create a safetynet (to eliminate the fear of regression) and refactor the code to keep the code clean.
+
 #### 2.	Reveal intention (Easy to read and understand)
+Naming correctly the variables, the methods and classes will help the understanding, and the more the names are well choosen
 we need to be expressive
 Choose a good name that represents the things
 Keep your functions and classes small. It’s easier to name, write, and understand it.
@@ -103,19 +103,153 @@ These questions can be asked to yourself when you take some time to have a step 
 •	Do I have any dead code? Sometimes as we working through our system, we build things that aren’t final, and there are times that in the end, we don’t need it at all in the final product. If it’s happened, no question asked, just delete it.
 •	Have I extracted too far? Sometimes we can do over-extract while trying to better express our intent, for example when extracting methods for readability but we do it too far to the extent that every method has its own class.
 
+JB Rainsberger simplified the 4 rules and kept only 2 of them:
+
+
+He consider that testing is evident and must not be considered as 
+
 ## Messaging
 
 ## Living Objects
-A primitive type is a basic type that a programming language provides.
+Alan Kay said in his Object Oriented programming definition, "Everything is an Object".
+It means only object must be manipulated in order to enable the messaging.
+Below some details on Static method and primitive objects : 
 
-static methods,
+#### Static method 
+It should be manipulated only in specific context like Factory method. Below an example of a static method for(), used to instanciate the right object depending on the verse number of a song:
+``` abap
+CLASS lcl_bottle_number DEFINITION.
+
+  PUBLIC SECTION.
+  CLASS-METHODS:
+      for         IMPORTING iv_number               TYPE i
+                  RETURNING VALUE(ro_bottle_number) TYPE REF TO lcl_bottle_number.
+ENDCLASS.
+
+CLASS lcl_bottle_number IMPLEMENTATION.
+  METHOD for.
+    DATA lv_bottle_number_class TYPE string.
+
+    CASE iv_number.
+      WHEN 0.
+        lv_bottle_number_class = '\PROGRAM=YR_99_ACHIEVING_OPENNESS\CLASS=LCL_BOTTLE_NUMBER_0'.
+      WHEN 1.
+        lv_bottle_number_class = '\PROGRAM=YR_99_ACHIEVING_OPENNESS\CLASS=LCL_BOTTLE_NUMBER_1'.
+      WHEN OTHERS.
+        lv_bottle_number_class = '\PROGRAM=YR_99_ACHIEVING_OPENNESS\CLASS=LCL_BOTTLE_NUMBER'.
+    ENDCASE.
+    CREATE OBJECT ro_bottle_number TYPE (lv_bottle_number_class) 
+		EXPORTING iv_number = iv_number.
+  ENDMETHOD.
+
+ENDCLASS.
+```
+
+#### Primitive type 
+It's a basic type that a programming language provides (String, Integer, Date). As in an OO context we manipulate entities (Bottle, Player, Car, Invoice, Roman number, etc.), it makes more sense to materialize them in object as well and not keeping them as primitive type.
+Here an example on the Connect4 game. We started initially by 2 string attributes player1 and player2 in the main class, but instead of keeping them as primitive attributes, the class YCL_PLAYER has been created :
+``` abap
+CLASS ycl_player DEFINITION PUBLIC FINAL CREATE PUBLIC .
+
+  PUBLIC SECTION.
+    METHODS:
+      constructor
+        IMPORTING
+          iv_nickname TYPE string
+          iv_disc_value TYPE yif_c4_cell=>gc_disc_value,
+       nickname RETURNING VALUE(rv_nickname) TYPE string,
+      disc_value
+            RETURNING
+              value(rv_result) TYPE yif_c4_cell=>gc_disc_value.
+  PRIVATE SECTION.
+  DATA : mv_nickname TYPE string,
+         mv_disc_value TYPE yif_c4_cell=>gc_disc_value.
+ENDCLASS.
+
+CLASS ycl_player IMPLEMENTATION.
+  METHOD constructor.
+    mv_nickname = iv_nickname.
+    mv_disc_value = iv_disc_value.
+  ENDMETHOD.
+
+  METHOD nickname.
+    rv_nickname = mv_nickname.
+  ENDMETHOD.
+
+  METHOD disc_value.
+    rv_result = mv_disc_value.
+  ENDMETHOD.
+
+ENDCLASS.
+```
 
 ## IOSP
-Invented by Ralf Westphal, IOSP abreviation of "Integration Operation Segregration Principle". 
-It consists on separating the calls of the methods from le logic
-Easier to test the operations
-Comprehensive, like a Book
-Easy to apply and to detect violations
+Invented by Ralf Westphal, IOSP means "Integration Operation Segregration Principle". 
+It consists on separating the calls of the methods (Integration method) from the logic (Operation method).
+
+It has several advantages : 
+- Comprehensive. Like in a book, there are the main chapters (Integration) with their respective sub chapters (Operation)
+- Avoid functional dependencies
+- Easier to test the operations as they contains only logic
+- Decreases function size and tends to follow SRP with pure functions
+
+Here an example of a code where the method next_round() contains logic and method call.
+``` abap
+  METHOD next_round.
+    mo_current_player = COND #(
+       WHEN mo_current_player = mt_players[ 1 ] THEN mt_players[ 2 ]
+       ELSE mt_players[ 1 ]
+    ).
+	 
+    rv_message = |{ mo_current_player->nickname(  ) }'s Turn|.
+  ENDMETHOD.
+```
+
+Following the IOSP, the next_round() method is now an integration class, calling 2 operation methods set_current_player() and next_player().
+As each method has one responsibility and the logic is reduced, it's easier to test
+``` abap
+  METHOD next_round.
+    set_current_player( ).
+    rv_message = next_player(  ).
+  ENDMETHOD.
+
+  METHOD set_current_player.
+    mo_current_player = COND #(
+       WHEN mo_current_player = mt_players[ 1 ] THEN mt_players[ 2 ]
+       ELSE mt_players[ 1 ]
+    ).
+  ENDMETHOD.
+
+  METHOD next_player.
+    rv_message = |{ mo_current_player->nickname(  ) }'s Turn|.
+  ENDMETHOD.
+```
 
 
 ## Software dimension
+The shape of the code, by considering the indentation and the length, is important to get an idea on its complexity. It's what is behind software dimension.
+
+Below an code snippet (from a 3K LoC subroutine) with nested ifs, increasing drastically the code comprehension:
+``` abap
+IF w_molga = '06' .  "FRANCE
+  SELECT COUNT(*) FROM yhr_mig_cdxhra
+	WHERE pernr = enrich_table-pernr AND
+		  bukrs = z_bukrs.  "rajout de cette ligne avec le ticket I1097695
+  IF sy-subrc = 0.
+	IF  enrich_table-pernr(1) <> '9' AND enrich_table-pernr(2) <> '78' AND enrich_table-pernr(1) <> '5' .
+	  CLEAR : w_agr_name.
+	  SELECT SINGLE agr_name FROM agr_users INTO w_agr_name
+							 WHERE uname    = sy-uname
+							 AND   from_dat LE sy-datum
+							 AND   to_dat   GE sy-datum
+							 AND   agr_name = 'SA.AM.N1_2'.  " VESI FUNC HR
+	  IF sy-subrc <> 0.
+		MESSAGE i044(zbc_codex) WITH enrich_table-pernr.
+	  ENDIF.
+	ENDIF.
+  ENDIF.
+ENDIF.
+```
+
+It could be splitted in Operation methods, smaller in size, with a single responsibility for each method. Or as we can see in the 1st line a condition on the Molga field (country field), we could use here a factory method to instanciate the object  related to the country, and redefine the methods if required. 
+These actions will help to reduce the code complexity and thus have a better software dimension.
