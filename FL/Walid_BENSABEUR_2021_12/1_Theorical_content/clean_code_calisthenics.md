@@ -1,8 +1,9 @@
 # Clean object calisthenics 
 
 ## Introduction
-Clean object calisthenics is a clean code discipline invented by Damir Majer that can be considered as a compass gathering principles that are intended to improve the overall code quality.
-Each of the following principle will be presented with an explanation and definition an example in ABAP.
+**Clean Object Calisthenics** is a set of clean code rules listed by Damir Majer that can be considered as a compass gathering principles that are intended to improve the overall code quality.
+Hereinafter the Cmap of these principles that will be presented in the following chapters.
+![Clean Object Calisthenics](/image/cmap_coc.png)
 
 ## 4 rules of simple design
 Presented by Kent Beck while he was developing XP in the 90s, the rules are the following one, ordered by priority and complementing each other:
@@ -11,6 +12,12 @@ Presented by Kent Beck while he was developing XP in the 90s, the rules are the 
 Writing tests (comprehensive tests) actually could lead us to better designs. It allows to create a safetynet (to eliminate the fear of regression) and refactor the code to keep the code clean.
 
 #### 2.	Reveal intention (Easy to read and understand)
+A developer will spend more time to read the code than write it. The naming must be meaningful and should immediately tells what the code is doing.
+
+
+When you look at a piece of code it should immediately tell you what it does and it shouldn’t surprise you. Variable, method, and class names should describe what they do. This is also refered to as the principle of least astonishment or the element of least surprise.
+
+
 Naming correctly the variables, the methods and classes will help the understanding, and the more the names are well choosen
 we need to be expressive
 Choose a good name that represents the things
@@ -18,6 +25,7 @@ Keep your functions and classes small. It’s easier to name, write, and underst
 Challenge and commit yourself to write code so that it reads as documentation
 
 gradually improving names.
+If the method name is too long, this could mean it hase multiple responsibilities which is a violation to SRP
 
 #### 3.	No duplication (DRY)
 DRY everything should be said once and only once
@@ -146,7 +154,7 @@ ENDCLASS.
 ```
 
 #### Primitive type 
-It's a basic type that a programming language provides (String, Integer, Date). As in an OO context we manipulate entities (Bottle, Player, Car, Invoice, Roman number, etc.), it makes more sense to materialize them in object as well and not keeping them as primitive type.
+It's a basic type that a programming language provides (String, Integer, Date). As in an OO context we manipulate entities (Bottle, Player, Car, Invoice, Roman number, etc.), it makes more sense to encapsulate them within objects as well and not keeping them as primitive type.
 Here an example on the Connect4 game. We started initially by 2 string attributes player1 and player2 in the main class, but instead of keeping them as primitive attributes, the class YCL_PLAYER has been created :
 ``` abap
 CLASS ycl_player DEFINITION PUBLIC FINAL CREATE PUBLIC .
